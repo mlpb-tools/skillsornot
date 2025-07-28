@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compétence ou pas compétence ? - Jeu Life Skills</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .game-area {
+            padding: 40px;
+        }
+        
+        .main-game {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .instructions {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4f46e5;
+        }
+        
+        .instructions h3 {
+            color: #1e293b;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions p {
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        .zones-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .zone {
+            border: 3px dashed #cbd5e1;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 250px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .zone.life-skills {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+        
+        .zone.soft-skills {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        
+        .zone.cps {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
+        }
+        
+        .zone.not-competence {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+        }
+        
+        .zone h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+        
+        .zone.life-skills h3 { color: #059669; }
+        .zone.soft-skills h3 { color: #d97706; }
+        .zone.cps h3 { color: #7c3aed; }
+        .zone.not-competence h3 { color: #dc2626; }
+        
+        .zone.drag-over {
+            border-style: solid;
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .zone-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .deck-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 15px;
+        }
+        
+        .card-deck {
+            position: relative;
+            width: 200px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .deck-info {
+            text-align: center;
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .card-stack {
+            position: relative;
+            width: 200px;
+            height: 280px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .card-stack:hover {
+            transform: scale(1.05);
+        }
+        
+        .stack-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .stack-card:nth-child(1) { transform: rotate(-2deg) translateY(4px); }
+        .stack-card:nth-child(2) { transform: rotate(1deg) translateY(2px); }
+        .stack-card:nth-child(3) { transform: rotate(0deg); z-index: 3; }
+        
+        .current-card {
+            width: 180px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            cursor: grab;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin: 20px auto;
+            position: relative;
+        }
+        
+        .current-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .current-card:active {
+            cursor: grabbing;
+        }
+        
+        .current-card.dragging {
+            opacity: 0.7;
+            transform: rotate(5deg) scale(0.95);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-content {
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .card-category {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        .card-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        /* Couleurs des liserés par thématique */
+        .border-valorisation { background: linear-gradient(90deg, #f59e0b, #f97316); }
+        .border-personnalite { background: linear-gradient(90deg, #8b5cf6, #a855f7); }
+        .border-bien-etre { background: linear-gradient(90deg, #10b981, #059669); }
+        .border-engagement { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .border-developpement { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+        .border-projet { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+        .border-ressources { background: linear-gradient(90deg, #84cc16, #65a30d); }
+        .border-valeurs { background: linear-gradient(90deg, #d946ef, #c026d3); }
+        .border-eco { background: linear-gradient(90deg, #22c55e, #16a34a); }
+        .border-curiosite { background: linear-gradient(90deg, #f97316, #ea580c); }
+        .border-connaissance { background: linear-gradient(90deg, #6b7280, #4b5563); }
+        .border-experience { background: linear-gradient(90deg, #92400e, #78350f); }
+        
+        .placed-card {
+            width: 100%;
+            margin-bottom: 8px;
+            transform: scale(0.8);
+        }
+        
+        .placed-card .card-image {
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .placed-card .card-content {
+            padding: 8px;
+        }
+        
+        .placed-card .card-title {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+
+        
+        .timer {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 20px;
+        }
+        
+        .score {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        
+
+        
+        .deck-counter {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .feedback {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .feedback.show {
+            display: block;
+        }
+        
+        .feedback h4 {
+            color: #059669;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 1024px) {
+            .zones-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .deck-section {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .game-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .game-area {
+                padding: 20px;
+            }
+            
+            .current-card {
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Compétence ou pas compétence ?</h1>
+            <p>Découvrez le rôle fondamental des Life Skills dans l'orientation et l'insertion professionnelle des jeunes</p>
+        </div>
+        
+        <div class="game-area">
+            <div class="instructions">
+                <h3>📋 Instructions</h3>
+                <p>Cliquez sur le tas de cartes pour révéler un élément, puis glissez-le dans la zone correspondante : <strong>Life Skills</strong>, <strong>Soft Skills</strong>, <strong>Compétences Psychosociales</strong> ou <strong>Pas une compétence</strong> (pour les connaissances et expériences).</p>
+            </div>
+            
+            <div class="deck-section">
+                <div class="deck-info">
+                    <div class="deck-counter" id="deck-counter">Cartes restantes : 89</div>
+                    <div class="card-deck" onclick="drawCard()">
+                        <div class="card-stack" id="card-stack">
+                            <div class="stack-card">🎴</div>
+                            <div class="stack-card">🎴</div>
+                            <div class="stack-card">Cliquez pour piocher</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="current-card-container"></div>
+                
+                <div class="game-stats">
+                    <div class="timer" id="timer">⏱️ 30:00</div>
+                    <div class="score" id="score">Cartes placées : 0/89</div>
+                </div>
+            </div>
+            
+            <div class="zones-container">
+                <div class="zone life-skills" data-zone="life-skills">
+                    <h3>🌱 Life Skills</h3>
+                    <p>Compétences de vie essentielles</p>
+                    <div class="zone-cards" id="life-skills-cards"></div>
+                </div>
+                
+                <div class="zone soft-skills" data-zone="soft-skills">
+                    <h3>🤝 Soft Skills</h3>
+                    <p>Compétences comportementales</p>
+                    <div class="zone-cards" id="soft-skills-cards"></div>
+                </div>
+                
+                <div class="zone cps" data-zone="cps">
+                    <h3>🧠 Compétences Psychosociales</h3>
+                    <p>Capacités psychologiques et sociales</p>
+                    <div class="zone-cards" id="cps-cards"></div>
+                </div>
+                
+                <div class="zone not-competence" data-zone="not-competence">
+                    <h3>❌ Pas une compétence</h3>
+                    <p>Connaissances et expériences</p>
+                    <div class="zone-cards" id="not-competence-cards"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="checkAnswers()">Vérifier les réponses</button>
+                <button class="btn btn-secondary" onclick="resetGame()">Recommencer</button>
+                <button class="btn btn-secondary" onclick="showHint()">💡 Indice</button>
+            </div>
+            
+            <div class="feedback" id="feedback">
+                <h4>🎉 Résultats</h4>
+                <div id="feedback-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const competences = [
+            // Cartes "pièges" - Connaissances et expériences (ne sont PAS des compétences) - VERSION DIFFICILE
+            { name: "Maîtrise du français", category: "Connaissances linguistiques", correct: "not-competence", icon: "🇫🇷", theme: "connaissance" },
+            { name: "Connaissance des réseaux sociaux", category: "Savoirs techniques", correct: "not-competence", icon: "📱", theme: "connaissance" },
+            { name: "Expérience du travail en équipe", category: "Vécu professionnel", correct: "not-competence", icon: "👥", theme: "experience" },
+            { name: "Pratique du sport", category: "Activités personnelles", correct: "not-competence", icon: "⚽", theme: "experience" },
+            { name: "Habitude de la ponctualité", category: "Comportements acquis", correct: "not-competence", icon: "⏰", theme: "experience" },
+            { name: "Connaissance du milieu associatif", category: "Savoirs contextuels", correct: "not-competence", icon: "🏛️", theme: "connaissance" },
+            { name: "Expérience de la vie en collectivité", category: "Vécu social", correct: "not-competence", icon: "🏠", theme: "experience" },
+            { name: "Pratique de la méditation", category: "Activités personnelles", correct: "not-competence", icon: "🧘‍♀️", theme: "experience" },
+            { name: "Connaissance des codes sociaux", category: "Savoirs culturels", correct: "not-competence", icon: "🎭", theme: "connaissance" },
+            { name: "Habitude de la lecture", category: "Pratiques personnelles", correct: "not-competence", icon: "📚", theme: "experience" },
+            { name: "Expérience de la prise de parole", category: "Vécu communicationnel", correct: "not-competence", icon: "🎤", theme: "experience" },
+            { name: "Familiarité avec les outils numériques", category: "Savoirs techniques", correct: "not-competence", icon: "💻", theme: "connaissance" },
+            
+            // Anciennes compétences
+            { name: "Confiance en soi", category: "Valorisation de soi", correct: "life-skills", icon: "💪", theme: "valorisation" },
+            { name: "Estime de soi", category: "Valorisation de soi", correct: "life-skills", icon: "⭐", theme: "valorisation" },
+            { name: "Conscience de soi", category: "Personnalité", correct: "life-skills", icon: "🧘", theme: "personnalite" },
+            { name: "Maîtrise de soi", category: "Bien-être physique et mental", correct: "cps", icon: "🎯", theme: "bien-etre" },
+            { name: "Régulation émotionnelle", category: "Bien-être physique et mental", correct: "cps", icon: "🌊", theme: "bien-etre" },
+            { name: "Gestion du stress", category: "Bien-être physique et mental", correct: "cps", icon: "🧘‍♀️", theme: "bien-etre" },
+            { name: "Acceptation de l'échec", category: "Bien-être physique et mental", correct: "cps", icon: "🌱", theme: "bien-etre" },
+            { name: "Sens des responsabilités", category: "Valorisation de soi", correct: "life-skills", icon: "🎖️", theme: "valorisation" },
+            { name: "Motivation", category: "Valorisation de soi", correct: "life-skills", icon: "🔥", theme: "valorisation" },
+            { name: "Autonomie", category: "Personnalité", correct: "life-skills", icon: "🦅", theme: "personnalite" },
+            { name: "Empathie", category: "Personnalité", correct: "cps", icon: "❤️", theme: "personnalite" },
+            { name: "Communication", category: "Personnalité", correct: "life-skills", icon: "💬", theme: "personnalite" },
+            { name: "Écoute active", category: "Personnalité", correct: "cps", icon: "👂", theme: "personnalite" },
+            { name: "Assertivité", category: "Valorisation de soi", correct: "life-skills", icon: "🗣️", theme: "valorisation" },
+            { name: "Travail d'équipe", category: "Personnalité", correct: "soft-skills", icon: "🤝", theme: "personnalite" },
+            { name: "Gestion des conflits", category: "Bien-être physique et mental", correct: "cps", icon: "⚖️", theme: "bien-etre" },
+            { name: "Bienveillance", category: "Valorisation de soi", correct: "cps", icon: "🤗", theme: "valorisation" },
+            { name: "Capacité à demander de l'aide", category: "Personnalité", correct: "life-skills", icon: "🙋", theme: "personnalite" },
+            { name: "Tolérance", category: "Personnalité", correct: "cps", icon: "🌈", theme: "personnalite" },
+            { name: "Conscience sociale", category: "Personnalité", correct: "cps", icon: "🌍", theme: "personnalite" },
+            { name: "Esprit critique", category: "Personnalité", correct: "life-skills", icon: "🔍", theme: "personnalite" },
+            { name: "Prise de décision", category: "Personnalité", correct: "life-skills", icon: "⚡", theme: "personnalite" },
+            { name: "Résolution de problèmes", category: "Personnalité", correct: "life-skills", icon: "🧩", theme: "personnalite" },
+            { name: "Pensée créative", category: "Personnalité", correct: "life-skills", icon: "🎨", theme: "personnalite" },
+            { name: "Analyse de situations", category: "Personnalité", correct: "life-skills", icon: "📊", theme: "personnalite" },
+            { name: "Adaptabilité", category: "Personnalité", correct: "soft-skills", icon: "🦎", theme: "personnalite" },
+            { name: "Organisation", category: "Personnalité", correct: "soft-skills", icon: "📋", theme: "personnalite" },
+            { name: "Gestion du temps", category: "Personnalité", correct: "soft-skills", icon: "⏰", theme: "personnalite" },
+            { name: "Gestion des priorités", category: "Personnalité", correct: "soft-skills", icon: "📌", theme: "personnalite" },
+            { name: "Agilité mentale", category: "Personnalité", correct: "life-skills", icon: "🧠", theme: "personnalite" },
+            
+            // Nouvelles compétences
+            { name: "Persévérance", category: "Valorisation de soi", correct: "life-skills", icon: "🏔️", theme: "valorisation" },
+            { name: "Développement personnel", category: "Développement personnel", correct: "life-skills", icon: "📈", theme: "developpement" },
+            { name: "Engagement", category: "Engagement", correct: "life-skills", icon: "🎯", theme: "engagement" },
+            { name: "Leadership", category: "Engagement", correct: "soft-skills", icon: "👑", theme: "engagement" },
+            { name: "Courage", category: "Engagement", correct: "life-skills", icon: "🦁", theme: "engagement" },
+            { name: "Capacité à faire des choix", category: "Personnalité", correct: "life-skills", icon: "🎲", theme: "personnalite" },
+            { name: "Vision à long terme", category: "Engagement", correct: "life-skills", icon: "🔭", theme: "engagement" },
+            { name: "Démarche réflexive", category: "Développement personnel", correct: "life-skills", icon: "🤔", theme: "developpement" },
+            { name: "Construction d'un projet", category: "Projet", correct: "life-skills", icon: "🏗️", theme: "projet" },
+            { name: "Savoir s'autoréguler", category: "Bien-être physique et mental", correct: "cps", icon: "🎛️", theme: "bien-etre" },
+            { name: "Respect des règles", category: "Personnalité", correct: "soft-skills", icon: "📜", theme: "personnalite" },
+            { name: "Gestion des émotions en situation professionnelle", category: "Bien-être physique et mental", correct: "cps", icon: "💼", theme: "bien-etre" },
+            { name: "Mobilisation de ses ressources", category: "Ressources matérielles et financières", correct: "life-skills", icon: "⚡", theme: "ressources" },
+            { name: "Accueil du feedback", category: "Valorisation de soi", correct: "life-skills", icon: "📝", theme: "valorisation" },
+            { name: "Posture professionnelle", category: "Personnalité", correct: "soft-skills", icon: "👔", theme: "personnalite" },
+            { name: "Éthique personnelle", category: "Valeurs", correct: "soft-skills", icon: "⚖️", theme: "valeurs" },
+            { name: "Éco-responsabilité", category: "Éco-responsabilité", correct: "life-skills", icon: "🌱", theme: "eco" },
+            { name: "Culture numérique", category: "Ressources matérielles et financières", correct: "soft-skills", icon: "💻", theme: "ressources" },
+            { name: "Curiosité", category: "Curiosité", correct: "life-skills", icon: "🔍", theme: "curiosite" },
+            { name: "Gestion de l'impulsivité", category: "Personnalité", correct: "cps", icon: "⏸️", theme: "personnalite" },
+            { name: "Prise de recul", category: "Personnalité", correct: "life-skills", icon: "🎭", theme: "personnalite" },
+            { name: "Stabilité émotionnelle", category: "Personnalité", correct: "cps", icon: "⚖️", theme: "personnalite" },
+            { name: "Lucidité", category: "Personnalité", correct: "life-skills", icon: "💡", theme: "personnalite" },
+            { name: "Cohérence personnelle", category: "Personnalité", correct: "life-skills", icon: "🧭", theme: "personnalite" },
+            { name: "Tolérance à l'ambiguïté", category: "Personnalité", correct: "life-skills", icon: "🌫️", theme: "personnalite" },
+            { name: "Détermination", category: "Personnalité", correct: "life-skills", icon: "🎯", theme: "personnalite" },
+            { name: "Indépendance d'esprit", category: "Personnalité", correct: "life-skills", icon: "🦅", theme: "personnalite" },
+            { name: "Sens de la justice", category: "Personnalité", correct: "life-skills", icon: "⚖️", theme: "personnalite" },
+            { name: "Savoir se mettre en valeur", category: "Valorisation de soi", correct: "soft-skills", icon: "✨", theme: "valorisation" },
+            { name: "Défendre son point de vue", category: "Valorisation de soi", correct: "life-skills", icon: "🛡️", theme: "valorisation" },
+            { name: "Exploration de ses talents", category: "Valorisation de soi", correct: "life-skills", icon: "💎", theme: "valorisation" },
+            { name: "Assertion positive", category: "Valorisation de soi", correct: "cps", icon: "👍", theme: "valorisation" },
+            { name: "Image de soi", category: "Valorisation de soi", correct: "cps", icon: "🪞", theme: "valorisation" },
+            { name: "Accueil du compliment", category: "Valorisation de soi", correct: "life-skills", icon: "🌟", theme: "valorisation" },
+            { name: "Capacité à parler de soi", category: "Valorisation de soi", correct: "life-skills", icon: "🗣️", theme: "valorisation" },
+            { name: "Confiance dans son futur", category: "Valorisation de soi", correct: "life-skills", icon: "🚀", theme: "valorisation" },
+            { name: "Qualité de sommeil", category: "Bien-être physique et mental", correct: "cps", icon: "😴", theme: "bien-etre" },
+            { name: "Gestion de la fatigue", category: "Bien-être physique et mental", correct: "cps", icon: "🔋", theme: "bien-etre" },
+            { name: "Santé mentale positive", category: "Bien-être physique et mental", correct: "cps", icon: "🧘‍♂️", theme: "bien-etre" },
+            { name: "Sensations corporelles", category: "Bien-être physique et mental", correct: "life-skills", icon: "🤸", theme: "bien-etre" },
+            { name: "Récupération physique", category: "Bien-être physique et mental", correct: "life-skills", icon: "🏃‍♂️", theme: "bien-etre" },
+            { name: "Biorhythme et énergie", category: "Bien-être physique et mental", correct: "life-skills", icon: "🌅", theme: "bien-etre" },
+            { name: "Activité physique régulière", category: "Bien-être physique et mental", correct: "life-skills", icon: "💪", theme: "bien-etre" },
+            { name: "Lien avec la nature", category: "Bien-être physique et mental", correct: "life-skills", icon: "🌳", theme: "bien-etre" },
+            { name: "Gestion d'un budget", category: "Ressources matérielles et financières", correct: "life-skills", icon: "💰", theme: "ressources" },
+            { name: "Planification d'achats", category: "Ressources matérielles et financières", correct: "life-skills", icon: "🛒", theme: "ressources" },
+            { name: "Organisation logistique", category: "Ressources matérielles et financières", correct: "soft-skills", icon: "📦", theme: "ressources" },
+            { name: "Anticipation des besoins", category: "Ressources matérielles et financières", correct: "life-skills", icon: "🔮", theme: "ressources" },
+            { name: "Accès à l'information utile", category: "Ressources matérielles et financières", correct: "life-skills", icon: "📚", theme: "ressources" }
+        ];
+
+        let gameStartTime;
+        let timerInterval;
+        let placedCards = 0;
+        let currentCardIndex = 0;
+        let shuffledCompetences = [];
+        let currentCard = null;
+
+        function initGame() {
+            gameStartTime = Date.now();
+            startTimer();
+            shuffledCompetences = [...competences];
+            shuffleArray(shuffledCompetences);
+            currentCardIndex = 0;
+            placedCards = 0;
+            currentCard = null;
+            updateCounters();
+            clearZones();
+            document.getElementById('current-card-container').innerHTML = '';
+            document.getElementById('feedback').classList.remove('show');
+            setupDragAndDrop();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startTimer() {
+            let timeLeft = 30 * 60;
+            
+            timerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert('⏰ Temps écoulé ! Vérifiez vos réponses.');
+                    checkAnswers();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function drawCard() {
+            if (currentCardIndex >= shuffledCompetences.length) {
+                alert('Plus de cartes dans le tas !');
+                return;
+            }
+
+            if (currentCard) {
+                alert('Placez d\'abord la carte actuelle avant d\'en piocher une nouvelle !');
+                return;
+            }
+
+            const competence = shuffledCompetences[currentCardIndex];
+            currentCard = competence;
+            
+            const cardElement = createCardElement(competence, currentCardIndex);
+            document.getElementById('current-card-container').innerHTML = '';
+            document.getElementById('current-card-container').appendChild(cardElement);
+            
+            currentCardIndex++;
+            updateCounters();
+            
+            // Animation de pioche
+            cardElement.style.transform = 'scale(0) rotate(180deg)';
+            cardElement.style.opacity = '0';
+            setTimeout(() => {
+                cardElement.style.transform = 'scale(1) rotate(0deg)';
+                cardElement.style.opacity = '1';
+            }, 100);
+        }
+
+        function createCardElement(competence, index) {
+            const card = document.createElement('div');
+            card.className = 'current-card';
+            card.draggable = true;
+            card.dataset.competence = index;
+            
+            const borderClass = `border-${competence.theme}`;
+            
+            card.innerHTML = `
+                <div class="card-border ${borderClass}"></div>
+                <div class="card-image">
+                    <div style="font-size: 3rem; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">
+                        ${competence.icon}
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">${competence.name}</div>
+                    <div class="card-category">${competence.category}</div>
+                </div>
+            `;
+            
+            // Ajouter les événements de drag
+            addDragEvents(card);
+            
+            return card;
+        }
+
+        function updateCounters() {
+            const remaining = shuffledCompetences.length - currentCardIndex;
+            document.getElementById('deck-counter').textContent = `Cartes restantes : ${remaining}`;
+            document.getElementById('score').textContent = `Cartes placées : ${placedCards}/${shuffledCompetences.length}`;
+            
+            // Masquer le tas si plus de cartes
+            const cardStack = document.getElementById('card-stack');
+            if (remaining === 0) {
+                cardStack.style.opacity = '0.3';
+                cardStack.style.cursor = 'not-allowed';
+            } else {
+                cardStack.style.opacity = '1';
+                cardStack.style.cursor = 'pointer';
+            }
+        }
+
+        function clearZones() {
+            document.getElementById('life-skills-cards').innerHTML = '';
+            document.getElementById('soft-skills-cards').innerHTML = '';
+            document.getElementById('cps-cards').innerHTML = '';
+            document.getElementById('not-competence-cards').innerHTML = '';
+        }
+
+        function setupDragAndDrop() {
+            const zones = document.querySelectorAll('.zone');
+
+            zones.forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('drop', handleDrop);
+                zone.addEventListener('dragenter', handleDragEnter);
+                zone.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.competence);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            if (e.target.classList.contains('zone')) {
+                e.target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('zone')) {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const zone = e.target.closest('.zone');
+            if (!zone) return;
+            
+            zone.classList.remove('drag-over');
+            const competenceIndex = e.dataTransfer.getData('text/plain');
+            const cardElement = document.querySelector(`[data-competence="${competenceIndex}"]`);
+            
+            if (cardElement && currentCard) {
+                const zoneCards = zone.querySelector('.zone-cards');
+                
+                // Créer une version réduite de la carte pour la zone
+                const placedCard = createCardElement(currentCard, competenceIndex);
+                placedCard.classList.add('placed-card');
+                placedCard.draggable = false;
+                
+                zoneCards.appendChild(placedCard);
+                
+                // Supprimer la carte actuelle
+                document.getElementById('current-card-container').innerHTML = '';
+                currentCard = null;
+                placedCards++;
+                updateCounters();
+                
+                // Animation de placement
+                placedCard.style.transform = 'scale(0)';
+                setTimeout(() => {
+                    placedCard.style.transform = 'scale(0.8)';
+                }, 100);
+            }
+        }
+
+        // Ajouter les événements de drag aux cartes créées dynamiquement
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.classList.contains('current-card')) {
+                handleDragStart(e);
+            }
+        });
+
+        document.addEventListener('dragend', function(e) {
+            if (e.target.classList.contains('current-card')) {
+                handleDragEnd(e);
+            }
+        });
+
+        // Ajouter les événements aux cartes nouvellement créées
+        function addDragEvents(cardElement) {
+            cardElement.addEventListener('dragstart', handleDragStart);
+            cardElement.addEventListener('dragend', handleDragEnd);
+        }
+
+        function checkAnswers() {
+            let correct = 0;
+            let results = [];
+            
+            const zones = ['life-skills', 'soft-skills', 'cps', 'not-competence'];
+            
+            zones.forEach(zoneName => {
+                const zoneCards = document.getElementById(`${zoneName}-cards`).children;
+                Array.from(zoneCards).forEach(card => {
+                    const competenceIndex = card.dataset.competence;
+                    const competence = shuffledCompetences[competenceIndex];
+                    const isCorrect = competence.correct === zoneName;
+                    
+                    if (isCorrect) {
+                        correct++;
+                        card.style.borderColor = '#10b981';
+                        card.style.backgroundColor = '#ecfdf5';
+                    } else {
+                        card.style.borderColor = '#ef4444';
+                        card.style.backgroundColor = '#fef2f2';
+                    }
+                    
+                    results.push({
+                        name: competence.name,
+                        placed: zoneName,
+                        correct: competence.correct,
+                        isCorrect
+                    });
+                });
+            });
+            
+            showResults(correct, results);
+        }
+
+        function showResults(correct, results) {
+            const feedback = document.getElementById('feedback');
+            const content = document.getElementById('feedback-content');
+            
+            const percentage = placedCards > 0 ? Math.round((correct / placedCards) * 100) : 0;
+            
+            let html = `
+                <p><strong>Score : ${correct}/${placedCards} (${percentage}%)</strong></p>
+                <div style="margin-top: 15px;">
+            `;
+            
+            if (percentage >= 80) {
+                html += '<p style="color: #059669;">🎉 Excellent ! Vous maîtrisez bien les différences entre ces concepts.</p>';
+            } else if (percentage >= 60) {
+                html += '<p style="color: #d97706;">👍 Bon travail ! Quelques ajustements à faire.</p>';
+            } else {
+                html += '<p style="color: #dc2626;">💪 Continuez à vous entraîner pour mieux distinguer ces compétences.</p>';
+            }
+            
+            html += '</div>';
+            content.innerHTML = html;
+            feedback.classList.add('show');
+            
+            clearInterval(timerInterval);
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            initGame();
+        }
+
+        function showHint() {
+            const hints = [
+                "💡 Les Life Skills sont des compétences de vie fondamentales pour l'autonomie personnelle.",
+                "💡 Les Soft Skills sont plutôt orientées vers le monde professionnel et le travail en équipe.",
+                "💡 Les Compétences Psychosociales concernent la gestion émotionnelle et les relations sociales.",
+                "💡 Attention ! Une expérience vécue ou une connaissance acquise n'est pas forcément une compétence.",
+                "💡 Regardez la catégorie et le liseré coloré pour vous aider !",
+                "💡 'Bien-être physique et mental' correspond souvent aux CPS.",
+                "💡 Les compétences de 'Valorisation de soi' peuvent être Life Skills ou CPS selon le contexte.",
+                "💡 L'organisation et la gestion du temps sont typiquement des Soft Skills.",
+                "💡 Distinguez bien : 'Expérience du travail en équipe' ≠ 'Travail d'équipe' (compétence).",
+                "💡 Une habitude ou une pratique n'est pas automatiquement une compétence transférable.",
+                "💡 Méfiez-vous des formulations qui décrivent un vécu plutôt qu'une capacité d'action."
+            ];
+            
+            const randomHint = hints[Math.floor(Math.random() * hints.length)];
+            alert(randomHint);
+        }
+
+        // Initialiser le jeu au chargement
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9661ba7833337a62',t:'MTc1MzY3Nzk0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
